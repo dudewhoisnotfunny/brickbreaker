@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Gamedev Canvas Workshop</title>
+    <style>
+    	* { padding: 0; margin: 0; }
+    	canvas { background: #eeeeee; display: block; margin: 0 auto; }
+		#gameStatus { display: block; margin: auto; text-align: center; font-style: oblique}
+		body { background-color: #000000 }
+    </style>
+</head>
+<body>
+
+<canvas id="myCanvas" width="480" height="640"></canvas>
+
+<div id="gameStatus"></div>
+
+<script>
+	var canvas = document.getElementById("myCanvas");
+	var ctx = canvas.getContext("2d");
+	var x = canvas.width/2;
+	var y = canvas.height-30;
+	var dx = 2;
+	var dy = -2;
+	var ballRadius = 20;
+	
+	var paddleHeight = 10;
+	var paddleWidth = 75;
+	var paddleX = (canvas.width-paddleWidth)/2;
+	var rightPressed = false;
+	var leftPressed = false;
+	
+	var brickRowCount = 5;
+	var brickColumnCount = 5;
+	// var brickPadding = 5;
+	// var brickHeight = Math.floor((canvas.height / 3 / brickRowCount) - brickPadding);
+	// var brickWidth = Math.floor(((canvas.width - brickPadding)/ brickColumnCount) - brickPadding);
+	var brickHeight = Math.floor(canvas.height / 3 / brickRowCount);
+	var brickWidth = Math.floor((canvas.width)/ brickColumnCount);
+	var bricks = [];
+	
+	var horizontalOffset = 0
+	var verticalOffset = 0;
+	for (var i = 0; i < brickRowCount; i++) {
+		bricks[i] = [];
+		//horizontalOffset = 0;
+		for (var j = 0; j < brickColumnCount; j++) {
+			bricks[i][j] = {x: 0, y: 0};
+			//bricks[i][j] = {x: horizontalOffset, y: verticalOffset};
+			//horizontalOffset += brickWidth;
+		}
+		//verticalOffset += brickHeight;
+	}
+	
+	document.getElementById("gameStatus").innerHTML = "Made by Romy Johal";
+	
+	function drawBricks() {
+		for (var r = 0; r < brickRowCount; r++) {
+			for (var c = 0; c < brickColumnCount; c++) {
+				// var brickX = (c * (brickWidth + brickPadding)) + brickPadding;
+				// var brickY = (r * (brickHeight + brickPadding)) + brickPadding;
+				
+				var brickX = c * brickWidth;
+				var brickY = r * brickHeight;
+				
+				bricks[r][c].x = brickX;
+				bricks[r][c].y = brickY;
+				
+				ctx.beginPath();
+				ctx.rect(brickX, brickY, brickWidth, brickHeight);
+				ctx.fillStyle = "#0095DD";
+				ctx.fill();
+				ctx.fillStyle = "#FFFFFF";
+				ctx.stroke();
+				ctx.closePath();
+				
+			}
+		}
+	}
+
+	function drawBall() {
+		ctx.beginPath();
+		ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+		ctx.fillStyle = "#d125b4";
+		ctx.fill();
+		ctx.closePath();
+	}
+	function drawPaddle() {
+		ctx.beginPath();
+		ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+		ctx.fillStyle = "#0095DD";
+		ctx.fill();
+		ctx.closePath();
+	}
+	function wallCollision(){
+		if (y + dy < ballRadius) { 
+			dy = -dy;
+		} else if (y + dy > canvas.height - ballRadius) {
+			if (x >= paddleX && x <= paddleX + paddleWidth) {
+				dy = -dy;
+			} else {
+				alert("Game Over");
+				document.location.reload();
+			}
+		}
+		if (x + dx < ballRadius || x + dx > canvas.width - ballRadius) { 
+			dx = -dx;
+		}
+	}
+	
+	function movePaddle(){
+		if (rightPressed && paddleX + paddleWidth < canvas.width) {
+			if (paddleX + 7 > canvas.width) {
+				paddleX = canvas.width - paddleWidth;
+			} else {
+				paddleX += 7;
+			}
+		} else if (leftPressed && paddleX > 0) {
+			if (paddleX - 7 < 0) {
+				paddleX = 0;
+			} else {
+				paddleX -= 7;
+			}
+		} 
+	}
+	
+	function draw() {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		drawBricks();
+		drawBall();
+		x += dx;
+		y += dy;
+		drawPaddle();
+		wallCollision();
+		movePaddle();
+		requestAnimationFrame(draw)
+	}
+
+	document.addEventListener("keydown", keyDownHandler, false);
+	document.addEventListener("keyup", keyUpHandler, false);
+	
+	function keyDownHandler(e) {
+		if (e.key == "Right" || e.key == "ArrowRight") {
+			rightPressed = true;
+		}
+		else if (e.key == "Left" || e.key == "ArrowLeft") {
+			leftPressed = true
+		}
+	}
+	
+	function keyUpHandler(e) {
+		if (e.key == "Right" || e.key == "ArrowRight") {
+			rightPressed = false;
+		}
+		else if (e.key == "Left" || e.key == "ArrowLeft") {
+			leftPressed = false
+		}
+	}
+	draw();
+</script>
+
+</body>
+</html>
